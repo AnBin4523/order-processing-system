@@ -7,6 +7,9 @@ import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.OrderItem;
 import com.example.orderservice.entity.OrderStatus;
 import com.example.orderservice.entity.Product;
+import com.example.orderservice.event.OrderCreatedEvent;
+import com.example.orderservice.event.OrderEventPublisher;
+import com.example.orderservice.event.OrderStatusChangedEvent;
 import com.example.orderservice.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -21,10 +24,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductService productService;
+    private final OrderEventPublisher orderEventPublisher;
 
-    public OrderService(OrderRepository orderRepository, ProductService productService) {
+    public OrderService(OrderRepository orderRepository, ProductService productService,
+                         OrderEventPublisher orderEventPublisher) {
         this.orderRepository = orderRepository;
         this.productService = productService;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
@@ -52,7 +58,16 @@ public class OrderService {
         }
         order.setTotalAmount(totalAmount);
 
-        return OrderResponse.from(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        orderEventPublisher.publishOrderCreated(new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getCustomerName(),
+                savedOrder.getCustomerEmail(),
+                savedOrder.getTotalAmount(),
+                savedOrder.getCurrency()
+        ));
+
+        return OrderResponse.from(savedOrder);
     }
 
     @Transactional(readOnly = true)
@@ -69,8 +84,16 @@ public class OrderService {
 
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = findOrderOrThrow(id);
+        OrderStatus oldStatus = order.getStatus();
         order.setStatus(status);
-        return OrderResponse.from(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+
+        if (oldStatus != status) {
+            orderEventPublisher.publishOrderStatusChanged(
+                    new OrderStatusChangedEvent(savedOrder.getId(), oldStatus, status));
+        }
+
+        return OrderResponse.from(savedOrder);
     }
 
     private Order findOrderOrThrow(Long id) {
