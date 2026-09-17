@@ -42,6 +42,9 @@ public class Order {
     @Column(nullable = false, length = 3)
     private String currency;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -97,6 +100,14 @@ public class Order {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public LocalDateTime getCreatedAt() {

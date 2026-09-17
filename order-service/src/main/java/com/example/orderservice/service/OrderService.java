@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -35,11 +36,16 @@ public class OrderService {
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
+        return createOrder(request, null);
+    }
+
+    public OrderResponse createOrder(CreateOrderRequest request, Long userId) {
         Order order = new Order();
         order.setCustomerName(request.customerName());
         order.setCustomerEmail(request.customerEmail());
         order.setCurrency(request.currency());
         order.setStatus(OrderStatus.PENDING);
+        order.setUserId(userId);
 
         BigDecimal totalAmount = BigDecimal.ZERO;
         for (OrderItemRequest itemRequest : request.items()) {
@@ -77,6 +83,11 @@ public class OrderService {
         return orderRepository.findAll(pageable).map(OrderResponse::from);
     }
 
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> listOrdersForUser(Long userId, Pageable pageable) {
+        return orderRepository.findByUserId(userId, pageable).map(OrderResponse::from);
+    }
+
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = findOrderOrThrow(id);
         OrderStatus oldStatus = order.getStatus();
@@ -92,11 +103,23 @@ public class OrderService {
     }
 
     public OrderResponse cancelOrder(Long id) {
+        return cancelOrder(findOrderOrThrow(id));
+    }
+
+    public OrderResponse cancelOrder(Long id, Long userId) {
         Order order = findOrderOrThrow(id);
+        if (!Objects.equals(order.getUserId(), userId)) {
+            // Treat another user's order as not found, rather than confirming it exists.
+            throw new EntityNotFoundException("Order not found: " + id);
+        }
+        return cancelOrder(order);
+    }
+
+    private OrderResponse cancelOrder(Order order) {
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new IllegalArgumentException("Only PENDING orders can be cancelled, current status: " + order.getStatus());
         }
-        return updateStatus(id, OrderStatus.CANCELLED);
+        return updateStatus(order.getId(), OrderStatus.CANCELLED);
     }
 
     public void deleteOrder(Long id) {
