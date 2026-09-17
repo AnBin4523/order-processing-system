@@ -1,5 +1,6 @@
 package com.example.orderservice.service;
 
+import com.example.orderservice.dto.CreateProductRequest;
 import com.example.orderservice.dto.ProductResponse;
 import com.example.orderservice.entity.Product;
 import com.example.orderservice.repository.ProductRepository;
@@ -9,7 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @Transactional
@@ -21,12 +23,20 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public ProductResponse createProduct(String name, BigDecimal price, String currency) {
+    public ProductResponse createProduct(CreateProductRequest request) {
         Product product = new Product();
-        product.setName(name);
-        product.setPrice(price);
-        product.setCurrency(currency);
+        product.setName(request.name());
+        product.setPrice(request.price());
+        product.setCurrency(request.currency());
+        product.setImageUrl(request.imageUrl() != null && !request.imageUrl().isBlank()
+                ? request.imageUrl()
+                : defaultImageUrl(request.name()));
         return ProductResponse.from(productRepository.save(product));
+    }
+
+    private String defaultImageUrl(String name) {
+        String encoded = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
+        return "https://placehold.co/400x300?text=" + encoded;
     }
 
     @Transactional(readOnly = true)

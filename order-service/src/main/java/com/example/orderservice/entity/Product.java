@@ -29,6 +29,9 @@ public class Product {
     @Column(nullable = false, length = 3)
     private String currency;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -65,6 +68,14 @@ public class Product {
 
     public void setCurrency(String currency) {
         this.currency = currency;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public LocalDateTime getCreatedAt() {
