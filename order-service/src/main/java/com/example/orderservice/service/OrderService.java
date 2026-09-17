@@ -12,11 +12,12 @@ import com.example.orderservice.event.OrderEventPublisher;
 import com.example.orderservice.event.OrderStatusChangedEvent;
 import com.example.orderservice.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @Transactional
@@ -34,10 +35,6 @@ public class OrderService {
     }
 
     public OrderResponse createOrder(CreateOrderRequest request) {
-        if (request.items() == null || request.items().isEmpty()) {
-            throw new IllegalArgumentException("Order must contain at least one item");
-        }
-
         Order order = new Order();
         order.setCustomerName(request.customerName());
         order.setCustomerEmail(request.customerEmail());
@@ -76,10 +73,8 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public List<OrderResponse> listOrders() {
-        return orderRepository.findAll().stream()
-                .map(OrderResponse::from)
-                .toList();
+    public Page<OrderResponse> listOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable).map(OrderResponse::from);
     }
 
     public OrderResponse updateStatus(Long id, OrderStatus status) {
@@ -94,6 +89,19 @@ public class OrderService {
         }
 
         return OrderResponse.from(savedOrder);
+    }
+
+    public OrderResponse cancelOrder(Long id) {
+        Order order = findOrderOrThrow(id);
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalArgumentException("Only PENDING orders can be cancelled, current status: " + order.getStatus());
+        }
+        return updateStatus(id, OrderStatus.CANCELLED);
+    }
+
+    public void deleteOrder(Long id) {
+        Order order = findOrderOrThrow(id);
+        orderRepository.delete(order);
     }
 
     private Order findOrderOrThrow(Long id) {

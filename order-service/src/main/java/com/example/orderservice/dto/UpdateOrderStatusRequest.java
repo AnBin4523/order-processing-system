@@ -1,8 +1,9 @@
 package com.example.orderservice.dto;
 
 import com.example.orderservice.entity.OrderStatus;
+import jakarta.validation.constraints.NotNull;
 
 public record UpdateOrderStatusRequest(
-        OrderStatus status
+        @NotNull OrderStatus status
 ) {
 }

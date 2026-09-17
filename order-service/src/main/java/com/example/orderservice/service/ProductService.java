@@ -4,11 +4,12 @@ import com.example.orderservice.dto.ProductResponse;
 import com.example.orderservice.entity.Product;
 import com.example.orderservice.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @Transactional
@@ -34,10 +35,8 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProductResponse> listProducts() {
-        return productRepository.findAll().stream()
-                .map(ProductResponse::from)
-                .toList();
+    public Page<ProductResponse> listProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(ProductResponse::from);
     }
 
     Product findProductOrThrow(Long id) {
