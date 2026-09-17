@@ -1,0 +1,18 @@
+<nav xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+     th:fragment="navbar(active)"
+     class="navbar navbar-expand navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+        <span class="navbar-brand fw-bold" style="color:#4f46e5;">Order Processing System</span>
+        <div class="navbar-nav me-auto">
+            <a class="nav-link" th:classappend="${active == 'products'} ? 'active fw-semibold' : ''" href="/app/products">Sản phẩm</a>
+            <a sec:authorize="isAuthenticated()" class="nav-link"
+               th:classappend="${active == 'dashboard'} ? 'active fw-semibold' : ''" href="/dashboard">Dashboard</a>
+            <a sec:authorize="isAuthenticated()" class="nav-link"
+               th:classappend="${active == 'orders'} ? 'active fw-semibold' : ''" href="/app/orders">Đơn hàng</a>
+        </div>
+        <form sec:authorize="isAuthenticated()" method="get" action="/logout" class="ms-auto">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Đăng xuất</button>
+        </form>
+        <a sec:authorize="isAnonymous()" class="btn btn-primary btn-sm ms-auto" href="/login">Đăng nhập</a>
+    </div>
+</nav>
