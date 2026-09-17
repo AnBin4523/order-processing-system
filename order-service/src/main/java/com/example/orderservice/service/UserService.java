@@ -2,9 +2,12 @@ package com.example.orderservice.service;
 
 import com.example.orderservice.entity.User;
 import com.example.orderservice.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -31,5 +34,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(rawPassword));
         user.setEmail(email);
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> listUsers() {
+        return userRepository.findAll();
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new EntityNotFoundException("User not found: " + id);
+        }
+        userRepository.deleteById(id);
     }
 }

@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register", "/css/**", "/webjars/**",
                                 "/swagger-ui/**", "/v3/api-docs/**", "/actuator/**",
                                 "/products/**", "/orders/**", "/app/products/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

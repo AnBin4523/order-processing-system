@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản trị</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>body { background: #f8fafc; }</style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar('admin')}"></div>
+
+<div class="container py-4">
+    <h4 class="mb-4">Trang quản trị</h4>
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+        <div class="col">
+            <a href="/admin/products" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Sản phẩm</h5>
+                    <p class="card-text text-muted">Xem và tạo sản phẩm mới</p>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a href="/admin/orders" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Đơn hàng</h5>
+                    <p class="card-text text-muted">Xem và cập nhật trạng thái toàn bộ đơn hàng</p>
+                </div>
+            </a>
+        </div>
+        <div class="col">
+            <a href="/admin/users" class="card text-decoration-none shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Người dùng</h5>
+                    <p class="card-text text-muted">Xem và xóa tài khoản người dùng</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
